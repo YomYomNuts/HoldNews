@@ -20,9 +20,7 @@ public class Effects : MonoBehaviour
 		active = false;
 
 		foreach (Effect e in effects)
-        {
 			e.clear();
-		}
 		effects.Clear();
 	}
 

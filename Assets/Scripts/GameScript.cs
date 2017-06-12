@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+using UnityEngine.UI;
 
 public enum StateGame
 {
@@ -48,8 +48,23 @@ public class GameScript : MonoBehaviour
     }
     #endregion
 
+    #region Public Attributes
+    public List<Sprite> _FakesNews = new List<Sprite>();
+    public List<Sprite> _TrueNews = new List<Sprite>();
+    public Image _EmplacementNews;
+    public AudioSource _VictoireFake;
+    public AudioSource _VictoireTrue;
+    public AudioSource _PressFake;
+    public AudioSource _PressTrue;
+    public AudioSource _PressValidation;
+    [HideInInspector]
+    public bool _FirstLaunch;
+    #endregion
+
     #region Private Attributes
+    private Animator _Animator;
     private LaunchpadManager _Launchpad;
+    private Effects _Effects;
     private StateButton[,] _ButtonsState;
     private Dictionary<StateGame, State> _States;
     public StateGame _CurrentState;
@@ -66,7 +81,9 @@ public class GameScript : MonoBehaviour
 
     void Start()
     {
+        _Animator = FindObjectOfType<Animator>();
         _Launchpad = FindObjectOfType<LaunchpadManager>();
+        _Effects = FindObjectOfType<Effects>();
         Instantiate(Resources.Load("Prefabs/StoryGame"));
         _ButtonsState = new StateButton[WidthPad, HeightPad];
         _States = new Dictionary<StateGame, State>();
@@ -74,6 +91,7 @@ public class GameScript : MonoBehaviour
         _States.Add(StateGame.Gaming, new StateGaming(_Launchpad));
         _States.Add(StateGame.Ending, new StateEnding(_Launchpad));
         _CurrentState = StateGame.Length;
+        _FirstLaunch = true;
 
         Reset();
     }
@@ -91,6 +109,7 @@ public class GameScript : MonoBehaviour
 
     public void Reset()
     {
+        //_Effects.Deactivate();
         _StateWin = StateWin.None;
         for (int x = 0; x < WidthPad; ++x)
         {
@@ -194,10 +213,44 @@ public class GameScript : MonoBehaviour
         return nbButtons;
     }
 
+    public StateWin GetStateWin() { return _StateWin; }
     public void SetStateWin(StateWin parStateWin)
     {
         _StateWin = parStateWin;
-        Debug.Log(_StateWin);
+        switch (_StateWin)
+        {
+            case StateWin.FakeNews:
+                LaunchTrigger("ROUGE victoire");
+                _VictoireFake.Play();
+                break;
+            case StateWin.TrueNews:
+                LaunchTrigger("BLEU victoire");
+                _VictoireTrue.Play();
+                break;
+            case StateWin.Together:
+                LaunchTrigger("victoire");
+                _VictoireTrue.Play();
+                break;
+        }
+        //_Effects.Activate();
         ChangeState(StateGame.Ending);
+    }
+
+    public void LaunchTrigger(string parIdTrigger)
+    {
+        _Animator.SetTrigger(parIdTrigger);
+    }
+
+    public void SetNewNews(StateButton parState)
+    {
+        switch (parState)
+        {
+            case StateButton.News:
+                _EmplacementNews.sprite = _TrueNews[Random.Range(0, _TrueNews.Count)];
+                break;
+            case StateButton.FakeNews:
+                _EmplacementNews.sprite = _FakesNews[Random.Range(0, _FakesNews.Count)];
+                break;
+        }
     }
 }

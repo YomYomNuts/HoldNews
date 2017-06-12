@@ -8,6 +8,7 @@ public class StateGaming : State
     public static int _NbPressTouch = 2;
     public static float _TimeMaxMissRelease = 1.0f;
 
+    bool _IsInitialize;
     int _IndexTurn;
     bool _TurnNews;
     bool _ReleaseButton;
@@ -22,6 +23,7 @@ public class StateGaming : State
     public override void StartState()
     {
         base.StartState();
+        _IsInitialize = false;
         _IndexTurn = -1;
         _TurnNews = false;
         _WaintingReleaseButton.Clear();
@@ -35,6 +37,12 @@ public class StateGaming : State
 
     public override void UpdateState()
     {
+        if (!_IsInitialize)
+        {
+            GameScript.Instance._PressValidation.Play();
+            _IsInitialize = true;
+        }
+
         StateButton state = _TurnNews ? StateButton.News : StateButton.FakeNews;
         if (!_ReleaseButton)
         {
@@ -51,6 +59,19 @@ public class StateGaming : State
                 _PreviousTimeDisplay = Time.time;
                 _IsBlinking = true;
                 _WaitingNewTurn = false;
+
+                if (_TurnNews)
+                {
+                    GameScript.Instance.LaunchTrigger("BLEU");
+                    GameScript.Instance.SetNewNews(StateButton.News);
+                    GameScript.Instance._PressTrue.Play();
+                }
+                else
+                {
+                    GameScript.Instance.LaunchTrigger("ROUGE");
+                    GameScript.Instance.SetNewNews(StateButton.FakeNews);
+                    GameScript.Instance._PressFake.Play();
+                }
             }
             if (Time.time > _PreviousTimeDisplay + 0.5f)
             {
@@ -59,6 +80,18 @@ public class StateGaming : State
                     GameScript.Instance.SwitchColor((int)_CoordinateWaitingNews[i].x, (int)_CoordinateWaitingNews[i].y, currentStateBlink);
                 _PreviousTimeDisplay = Time.time;
                 _IsBlinking = !_IsBlinking;
+            }
+        }
+        else
+        {
+            if (_WaitingNewTurn)
+            {
+                _WaitingNewTurn = false;
+
+                if (_TurnNews)
+                    GameScript.Instance.LaunchTrigger("BLEU lache");
+                else
+                    GameScript.Instance.LaunchTrigger("ROUGE Lache");
             }
         }
     }
