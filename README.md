@@ -26,3 +26,5 @@ Attention: les fake news ne sont pas toujours aussi drôles. Croisez les sources
 
 
 Rien ne vous empeche de jouer à plusieurs (De toutes façons ce sera difficile de finir sans ça :))
+
+![alt text](https://raw.githubusercontent.com/bibiGN/HoldNews/master/image.jpg)
